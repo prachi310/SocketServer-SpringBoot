@@ -1,0 +1,13 @@
+spring:
+  application:
+     name: ClientSocketService
+
+server:
+  port: 3082
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+  instance:
+    preferIpAddress: true
