@@ -1,17 +1,19 @@
 package com.example.ClientSocketService.controllers;
 
-import com.example.ClientSocketService.dto.RideRequestDto;
-import com.example.ClientSocketService.dto.RideResponseDto;
-import com.example.ClientSocketService.dto.TestRequest;
-import com.example.ClientSocketService.dto.TestResponse;
+import com.example.ClientSocketService.dto.*;
+import lombok.Synchronized;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/socket")
@@ -19,8 +21,11 @@ public class DriverRequestController {
 
     private final SimpMessagingTemplate simpMessagingTemplate;
 
+    private final RestTemplate restTemplate;
+
     public DriverRequestController(SimpMessagingTemplate simpMessagingTemplate) {
         this.simpMessagingTemplate = simpMessagingTemplate;
+        this.restTemplate=new RestTemplate();
     }
 
     @PostMapping("/newRide")
@@ -36,9 +41,17 @@ public class DriverRequestController {
         simpMessagingTemplate.convertAndSend("/topic/rideRequest",requestDto);
     }
 
-    @MessageMapping("/rideResponse")
-    public void rideResponseHandler(RideResponseDto rideResponseDto) {
-        System.out.println(rideResponseDto.getResponse());
+    @MessageMapping("/rideResponse/{userId}")
+    public synchronized void rideResponseHandler(@DestinationVariable String userId, RideResponseDto rideResponseDto) {
+        System.out.println(rideResponseDto.getResponse()+ " " + userId);
+        UpdateBookingRequestDto updateBookingRequestDto=UpdateBookingRequestDto.builder()
+                .driverId(Optional.of(Long.valueOf(userId)))
+                .status("SCHEDULED")
+                .build();
+        ResponseEntity<UpdateBookingResponseDto> result= this.restTemplate.postForEntity("http://localhost:8000/api/v1/booking/"
+                        +rideResponseDto.bookingId,updateBookingRequestDto,UpdateBookingResponseDto.class);
+
+        System.out.println(result.getStatusCode());
     }
 
 }

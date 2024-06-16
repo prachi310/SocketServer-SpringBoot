@@ -21,6 +21,7 @@ configurations {
 
 repositories {
 	mavenCentral()
+	mavenLocal()
 }
 
 dependencies {
@@ -33,6 +34,7 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	// https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-starter-netflix-eureka-client
 	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:4.1.1'
+	implementation 'com.example:UberProject-EntityService:0.0.6'
 }
 
 tasks.named('test') {
