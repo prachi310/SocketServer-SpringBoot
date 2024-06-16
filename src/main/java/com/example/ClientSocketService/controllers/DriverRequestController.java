@@ -1,6 +1,8 @@
 package com.example.ClientSocketService.controllers;
 
+import com.example.ClientSocketService.consumers.KafkaConsumerService;
 import com.example.ClientSocketService.dto.*;
+import com.example.ClientSocketService.producers.KafkaProducerService;
 import lombok.Synchronized;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,12 +22,21 @@ import java.util.Optional;
 public class DriverRequestController {
 
     private final SimpMessagingTemplate simpMessagingTemplate;
+    private final KafkaProducerService kafkaProducerService;
 
     private final RestTemplate restTemplate;
 
-    public DriverRequestController(SimpMessagingTemplate simpMessagingTemplate) {
+    public DriverRequestController(SimpMessagingTemplate simpMessagingTemplate,
+                                   KafkaProducerService kafkaProducerService) {
         this.simpMessagingTemplate = simpMessagingTemplate;
         this.restTemplate=new RestTemplate();
+        this.kafkaProducerService =kafkaProducerService;
+    }
+
+    @GetMapping
+    public Boolean help() {
+        kafkaProducerService.publishMessage("sample-topic", "Hello");
+        return true;
     }
 
     @PostMapping("/newRide")
@@ -50,7 +61,7 @@ public class DriverRequestController {
                 .build();
         ResponseEntity<UpdateBookingResponseDto> result= this.restTemplate.postForEntity("http://localhost:8000/api/v1/booking/"
                         +rideResponseDto.bookingId,updateBookingRequestDto,UpdateBookingResponseDto.class);
-
+        kafkaProducerService.publishMessage("sample-topic", "Hello");
         System.out.println(result.getStatusCode());
     }
 
