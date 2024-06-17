@@ -41,7 +41,9 @@ public class DriverRequestController {
 
     @PostMapping("/newRide")
     public ResponseEntity<Boolean> raiseRideRequest(@RequestBody RideRequestDto requestDto){
+        System.out.println("request for rides received");
         sendDriverNeqRideRequest(requestDto);
+        System.out.println("Req completed");
         return new ResponseEntity<>(Boolean.TRUE,HttpStatus.OK);
     }
 
